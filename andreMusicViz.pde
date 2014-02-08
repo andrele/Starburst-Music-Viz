@@ -2,6 +2,7 @@ import ddf.minim.analysis.FFT;
 import ddf.minim.*;
 import controlP5.*;
 
+
 Minim minim;
 AudioInput input;
 FFT fftLog;
@@ -18,8 +19,9 @@ float spectrumScale = 4;
 float STROKE_MAX = 20;
 float STROKE_MIN = 5;
 float strokeMultiplier = 3;
-float audioThresh = 0;
-
+float audioThresh = .5;
+float[] circles = new float[29];
+float DECAY_RATE = 10;
 
 void setup(){
   size(SCREEN_WIDTH, SCREEN_HEIGHT, P3D);
@@ -33,8 +35,8 @@ void setup(){
   fftLog.logAverages( 22, 3);
   
   noFill();
-  
   ellipseMode(RADIUS);
+  
 }
 
 void draw(){
@@ -47,7 +49,17 @@ void draw(){
   
   
   // Loop through frequencies and compute width for ellipse stroke widths, and amplitude for size
-  for (int i = 0; i < fftLog.avgSize(); i++) {
+  for (int i = 0; i < 29; i++) {
+    
+    // What is the average height in relation to the screen height?
+    float amplitude = fftLog.getAvg(i);
+    
+    // If we hit a threshhold, then set the circle radius to new value
+    if (amplitude>audioThresh) {
+      circles[i] = amplitude*SCREEN_HEIGHT/2;
+    } else { // Otherwise, decay slowly
+      circles[i] = min(0,circles[i]-DECAY_RATE);
+    }
     
     // What is the centerpoint of the this frequency band?
     float centerFrequency = fftLog.getAverageCenterFrequency(i);
@@ -63,19 +75,21 @@ void draw(){
     int xl = (int)fftLog.freqToIndex(lowFreq);
     int xr = (int)fftLog.freqToIndex(highFreq);
     
-    // What is the average height in relation to the screen height?
-    float amplitude = fftLog.getAvg(i);
+
     
     pushStyle();
     // Calculate the gray value for this circle
-    stroke(amplitude*255);
-//    strokeWeight(map(amplitude, 0, 1, STROKE_MIN, STROKE_MAX));
-    strokeWeight((float)(xr-xl)*strokeMultiplier);
+//    stroke(amplitude*255);
+    stroke(255,255,255,amplitude*255);
+    strokeWeight(map(amplitude, 0, 1, STROKE_MIN, STROKE_MAX));
+//    strokeWeight((float)(xr-xl)*strokeMultiplier);
     
     // Draw an ellipse for this frequency
-    ellipse(0, 0, amplitude*SCREEN_HEIGHT/2, amplitude*SCREEN_HEIGHT/2);
+    ellipse(0, 0, circles[i], circles[i]);
     
     popStyle();
+    
+    println(i);
   }
   
   popMatrix();
