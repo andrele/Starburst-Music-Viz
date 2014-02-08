@@ -38,7 +38,15 @@ void setup(){
   noFill();
   ellipseMode(RADIUS);
   
-  cp5.addSlider(,,,,,,,)
+  cp5.addSlider("STROKE_MIN")
+    .setRange(0,40);
+    
+   cp5.addSlider("STROKE_MAX")
+    .setRange(0,40);
+    
+   cp5.addSlider("audioThresh")
+    .setRange(0,1);
+    
   
 }
 
