@@ -15,13 +15,13 @@ static int SCREEN_WIDTH = 800;
 static int SCREEN_HEIGHT = 600;
 
 // Modifiable parameters
-float spectrumScale = 4;
-float STROKE_MAX = 20;
-float STROKE_MIN = 5;
-float strokeMultiplier = 3;
-float audioThresh = .5;
+float spectrumScale = 2;
+float STROKE_MAX = 10;
+float STROKE_MIN = 2;
+float strokeMultiplier = 1;
+float audioThresh = .9;
 float[] circles = new float[29];
-float DECAY_RATE = 10;
+float DECAY_RATE = 2;
 
 void setup(){
   size(SCREEN_WIDTH, SCREEN_HEIGHT, P3D);
@@ -29,6 +29,7 @@ void setup(){
   frameRate(60);
   
   minim = new Minim(this);
+  cp5 = new ControlP5(this);
   input = minim.getLineIn(minim.MONO, 2048);
   
   fftLog = new FFT( input.bufferSize(), input.sampleRate());
@@ -36,6 +37,8 @@ void setup(){
   
   noFill();
   ellipseMode(RADIUS);
+  
+  cp5.addSlider(,,,,,,,)
   
 }
 
@@ -55,10 +58,10 @@ void draw(){
     float amplitude = fftLog.getAvg(i);
     
     // If we hit a threshhold, then set the circle radius to new value
-    if (amplitude>audioThresh) {
-      circles[i] = amplitude*SCREEN_HEIGHT/2;
+    if (amplitude<audioThresh) {
+      circles[i] = amplitude*(SCREEN_HEIGHT/2);
     } else { // Otherwise, decay slowly
-      circles[i] = min(0,circles[i]-DECAY_RATE);
+      circles[i] = max(0, min(SCREEN_HEIGHT,circles[i]-DECAY_RATE));
     }
     
     // What is the centerpoint of the this frequency band?
